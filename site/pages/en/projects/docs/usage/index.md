@@ -223,7 +223,7 @@ Whether to use [System Linker Exec Solution](../technical.md#system-linker-exec-
 
 **Type:** `string`
 
-**Commits:** [`db738a11`](https://github.com/termux/termux-exec-package/commit/db738a11)
+**Commits:** [`db738a11`](https://github.com/termux/termux-exec-package/commit/db738a11), [`89422f43`](https://github.com/termux/termux-exec-package/commit/89422f43)
 
 **Version:** [`>= 2.0.0`](https://github.com/termux/termux-exec-package/releases/tag/v2.0.0)
 
@@ -244,7 +244,7 @@ If `disable` is set, then `system_linker_exec` will never be used and the defaul
 If `enable` is set, then `system_linker_exec` will only be used if:
 - `system_linker_exec` is required to bypass [App Data File Execute Restrictions](../technical.md#app-data-file-execute-restrictions), i.e device is running on Android `>= 10`.
 - Effective user does not equal root (`0`) and shell (`2000`) user (used for [`adb`](https://developer.android.com/tools/adb)).
-- [`TERMUX__SE_PROCESS_CONTEXT`](#TERMUX__SE_PROCESS_CONTEXT) does not start with `PROCESS_CONTEXT_PREFIX__UNTRUSTED_APP_25` (`u:r:untrusted_app_25:`) and `PROCESS_CONTEXT_PREFIX__UNTRUSTED_APP_27` (`u:r:untrusted_app_27:`) for which restrictions are exempted. For more info on them, check [`SelinuxUtils.h`](https://github.com/termux/termux-core-package/blob/v0.4.0/lib/termux-core_nos_c/tre/include/termux/termux_core__nos__c/v1/unix/os/selinux/SelinuxUtils.h).
+- [`TERMUX__SE_PROCESS_CONTEXT`](#TERMUX__SE_PROCESS_CONTEXT) does not start with `PROCESS_CONTEXT_PREFIX__UNTRUSTED_APP_25` (`u:r:untrusted_app_25:`), `PROCESS_CONTEXT_PREFIX__UNTRUSTED_APP_27` (`u:r:untrusted_app_27:`) or `PROCESS_CONTEXT_PREFIX__RUNAS_APP` (`u:r:runas_app:`), and does not equal `PROCESS_CONTEXT__AOSP_SU` (`u:r:su:s0`), `PROCESS_CONTEXT__KERNEL_SU` (`u:r:ksu:s0`), `PROCESS_CONTEXT__MAGISK_SU` (`u:r:magisk:s0`) or `PROCESS_CONTEXT__SHELL` (`u:r:shell:s0`), for which restrictions are exempted. For more info on them, check [`SelinuxUtils.h`](https://github.com/termux/termux-core-package/blob/v0.4.0/lib/termux-core_nos_c/tre/include/termux/termux_core__nos__c/v1/unix/os/selinux/SelinuxUtils.h).
 - Executable or interpreter path is under [`TERMUX_APP__DATA_DIR`] or [`TERMUX_APP__LEGACY_DATA_DIR`] directory.
 
 If `force` is set, then `system_linker_exec` will only be used if:
