@@ -33,8 +33,14 @@ extern "C" {
  * - Effective user does not equal root (`0`) and shell (`2000`) user (used for
  *   [`adb`](https://developer.android.com/tools/adb)).
  * - `TERMUX__SE_PROCESS_CONTEXT` or its fallback `/proc/self/attr/current`
- *    does not start with `PROCESS_CONTEXT_PREFIX__UNTRUSTED_APP_25` and
- *   `PROCESS_CONTEXT_PREFIX__UNTRUSTED_APP_27` for which restrictions
+ *   does not start with
+ *   `PROCESS_CONTEXT_PREFIX__UNTRUSTED_APP_25` (`u:r:untrusted_app_25:`),
+ *   `PROCESS_CONTEXT_PREFIX__UNTRUSTED_APP_27` (`u:r:untrusted_app_27:`) or
+ *   `PROCESS_CONTEXT_PREFIX__RUNAS_APP` (`u:r:runas_app:`), and does not equal
+ *   `PROCESS_CONTEXT__AOSP_SU` (`u:r:su:s0`),
+ *   `PROCESS_CONTEXT__KERNEL_SU` (`u:r:ksu:s0`),
+ *   `PROCESS_CONTEXT__MAGISK_SU` (`u:r:magisk:s0`) or
+ *   `PROCESS_CONTEXT__SHELL` (`u:r:shell:s0`), for which restrictions
  *   are exempted.
  *
  * If `force` is set, then `system_linker_exec` should only be used if:

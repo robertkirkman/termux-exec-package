@@ -257,7 +257,7 @@ termux_exec__system_linker_exec__should_enable__run_command() {
                 else
                     termux_exec__system_linker_exec__log 2 "se_process_context_from_file: '$se_process_context'"
                     case "$se_process_context" in
-                        "u:r:untrusted_app_25:"*|"u:r:untrusted_app_27:"*)
+                        "u:r:untrusted_app_25:"*|"u:r:untrusted_app_27:"*|"u:r:runas_app:"*|"u:r:su:s0"|"u:r:ksu:s0"|"u:r:magisk:s0"|"u:r:shell:s0")
                             app_data_file_exec_exempted="true"
                             ;;
                     esac

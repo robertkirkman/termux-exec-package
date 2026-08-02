@@ -77,15 +77,36 @@ int shouldEnableSystemLinkerExec() {
         if (androidBuildVersionSdk >= 29) {
             // If running as root or shell user, then the process will
             // be assigned a different process context like
-            // `PROCESS_CONTEXT__AOSP_SU`,
-            // `PROCESS_CONTEXT__MAGISK_SU` or
-            // `PROCESS_CONTEXT__SHELL`, which will not be the same
-            // as the one that's exported in
+            // `PROCESS_CONTEXT__AOSP_SU` (`u:r:su:s0`),
+            // `PROCESS_CONTEXT__KERNEL_SU` (`u:r:ksu:s0`),
+            // `PROCESS_CONTEXT__MAGISK_SU` (`u:r:magisk:s0`) or
+            // `PROCESS_CONTEXT__SHELL` (`u:r:shell:s0`), which will
+            // not be the same as the one that's exported in
             // `ENV__TERMUX__SE_PROCESS_CONTEXT`, so we need to check
             // effective uid equals `0` or `2000` instead. Moreover,
             // other su providers may have different contexts, so we
-            // cannot just check AOSP or MAGISK contexts.
+            // cannot just check AOSP, MAGISK or KERNEL SU contexts.
             // - https://man7.org/linux/man-pages/man2/getuid.2.html
+            // However, if the su/shell user is used to drop
+            // privileges/capabilities and uid to an unprivileged user,
+            // like to Termux uid, only the uid may be changed to
+            // Termux uid but the process context may not be switched
+            // to Termux app's normal context, like one of the
+            // `u:r:untrusted_app*` contexts, and so the process will
+            // not be exempted from system linker exec unless those
+            // different process contexts are also explicitly exempted,
+            // as uid check will not be enough.
+            // For example, for the `adb shell run-as com.termux`
+            // command, the process context is switched to
+            // `u:r:runas_app:*` and only uid is changed to Termux uid.
+            // The `runas_app` context also allows execution of
+            // `app_data_file`, even if app uses `targetSdkVersion` `>= 28`
+            // and normally launches with `u:r:untrusted_app:*`
+            // instead of `u:r:untrusted_app_25:*` and `u:r:untrusted_app_27:*`.
+            // - https://cs.android.com/android/platform/superproject/+/android-16.0.0_r1:system/core/run-as/run-as.cpp;l=241-244
+            // - https://cs.android.com/android/platform/superproject/+/android-16.0.0_r1:system/sepolicy/private/runas_app.te;l=8
+            // For `su` commands, the original root process context
+            // may be preserved.
             uid_t uid = geteuid();
             if (uid == 0 || uid == 2000) {
                 logErrorVVerbose(LOG_TAG, "uid_to_exempt: '%d'", uid);
@@ -109,8 +130,15 @@ int shouldEnableSystemLinkerExec() {
                 }
 
                 if (getSeProcessContextSuccess) {
-                    appDataFileExecExempted = stringStartsWith(seProcessContext, PROCESS_CONTEXT_PREFIX__UNTRUSTED_APP_25) ||
-                        stringStartsWith(seProcessContext, PROCESS_CONTEXT_PREFIX__UNTRUSTED_APP_27);
+                    // Listed in order of likely higher use.
+                    appDataFileExecExempted =
+                        stringStartsWith(seProcessContext, PROCESS_CONTEXT_PREFIX__UNTRUSTED_APP_27) ||
+                        stringStartsWith(seProcessContext, PROCESS_CONTEXT_PREFIX__UNTRUSTED_APP_25) ||
+                        stringEquals(seProcessContext, PROCESS_CONTEXT__SHELL) ||
+                        stringStartsWith(seProcessContext, PROCESS_CONTEXT_PREFIX__RUNAS_APP) ||
+                        stringEquals(seProcessContext, PROCESS_CONTEXT__MAGISK_SU) ||
+                        stringEquals(seProcessContext, PROCESS_CONTEXT__KERNEL_SU) ||
+                        stringEquals(seProcessContext, PROCESS_CONTEXT__AOSP_SU);
                 } else {
                     // If even '/proc/self/attr/current' is not accessible,
                     // then SeLinux may not be supported on the device.
