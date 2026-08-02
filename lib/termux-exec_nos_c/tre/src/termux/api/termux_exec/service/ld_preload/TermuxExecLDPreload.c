@@ -24,13 +24,13 @@
 
 static const char* LOG_TAG = "ld-preload";
 
-static int sSystemLinkerExecEnabled = -1;
+static int sSystemLinkerExecShouldEnable = -1;
 
 
 
-int isSystemLinkerExecEnabled() {
-     if (sSystemLinkerExecEnabled == 0 || sSystemLinkerExecEnabled == 1) {
-        return sSystemLinkerExecEnabled;
+int shouldEnableSystemLinkerExec() {
+     if (sSystemLinkerExecShouldEnable == 0 || sSystemLinkerExecShouldEnable == 1) {
+        return sSystemLinkerExecShouldEnable;
     }
 
     bool isRunningTests = libtermux_exec__nos__c__getIsRunningTests();
@@ -40,9 +40,9 @@ int isSystemLinkerExecEnabled() {
         logErrorVVerbose(LOG_TAG, "system_linker_exec_mode: '%d'", systemLinkerExecMode);
     }
 
-    int systemLinkerExecEnabled = 1;
+    int systemLinkerExecShouldEnable = 1;
     if (systemLinkerExecMode == 0) { // disable
-        systemLinkerExecEnabled = 1; // disable
+        systemLinkerExecShouldEnable = 1; // disable
 
     } else if (systemLinkerExecMode == 2) { // force
         int androidBuildVersionSdk = android_buildVersionSdk_get();
@@ -58,7 +58,7 @@ int isSystemLinkerExecEnabled() {
         }
 
         if (systemLinkerExecAvailable) {
-            systemLinkerExecEnabled = 0; // enable
+            systemLinkerExecShouldEnable = 0; // enable
         }
 
     } else { // enable
@@ -88,7 +88,7 @@ int isSystemLinkerExecEnabled() {
             // - https://man7.org/linux/man-pages/man2/getuid.2.html
             uid_t uid = geteuid();
             if (uid == 0 || uid == 2000) {
-                logErrorVVerbose(LOG_TAG, "uid: '%d'", uid);
+                logErrorVVerbose(LOG_TAG, "uid_to_exempt: '%d'", uid);
                 appDataFileExecExempted = true;
             } else {
                 char seProcessContext[80];
@@ -124,23 +124,23 @@ int isSystemLinkerExecEnabled() {
             }
 
             if (!appDataFileExecExempted) {
-                systemLinkerExecEnabled = 0; // enable
+                systemLinkerExecShouldEnable = 0; // enable
             }
         }
     }
 
-    sSystemLinkerExecEnabled = systemLinkerExecEnabled;
+    sSystemLinkerExecShouldEnable = systemLinkerExecShouldEnable;
 
     if (!isRunningTests) {
-        logErrorVVerbose(LOG_TAG, "system_linker_exec_enabled: '%d'",
-            sSystemLinkerExecEnabled == 0 ? true : false);
+        logErrorVVerbose(LOG_TAG, "system_linker_exec_should_enable: '%d'",
+            sSystemLinkerExecShouldEnable == 0 ? true : false);
     }
 
-    return sSystemLinkerExecEnabled;
+    return sSystemLinkerExecShouldEnable;
 }
 
 int shouldEnableSystemLinkerExecForFile(const char *executablePath) {
-    int systemLinkerExecResult = isSystemLinkerExecEnabled();
+    int systemLinkerExecResult = shouldEnableSystemLinkerExec();
     // If error or disabled, then just return.
     if (systemLinkerExecResult != 0) {
         return systemLinkerExecResult;
@@ -162,7 +162,7 @@ int shouldEnableSystemLinkerExecForFile(const char *executablePath) {
     bool shouldEnableSystemLinkerExec = isExecutableUnderTermuxAppDataDir == 0;
 
     if (!isRunningTests) {
-        logErrorVVerbose(LOG_TAG, "system_linker_exec_enabled_for_file: '%d'",
+        logErrorVVerbose(LOG_TAG, "system_linker_exec_should_enable_for_file: '%d'",
             shouldEnableSystemLinkerExec);
     }
 

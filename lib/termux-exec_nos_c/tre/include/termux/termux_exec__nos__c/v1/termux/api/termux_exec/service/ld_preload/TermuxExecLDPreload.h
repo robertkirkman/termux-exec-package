@@ -18,7 +18,7 @@ extern "C" {
 
 
 /**
- * Whether usage of `system_linker_exec` is to be enabled, like to
+ * Whether usage of `system_linker_exec` should be enabled, like to
  * bypass app data file execute restrictions.
  *
  * A call is made to `termuxExec_systemLinkerExec_mode_get()` to
@@ -44,21 +44,21 @@ extern "C" {
  * See also `shouldEnableSystemLinkerExecForFile()`.
  *
  * **IMPORTANT** The logic must be kept consistent with the
- * `termux_exec__system_linker_exec__enabled__run_command()` function
+ * `termux_exec__system_linker_exec__should_enable__run_command()` function
  * in `termux-exec-system-linker-exec`.
  *
  * @return Returns `0` if `system_linker_exec` is to be enabled, `1` if
  * `system_linker_exec` should not be used, otherwise `-1` on failures.
  */
-int isSystemLinkerExecEnabled();
+int shouldEnableSystemLinkerExec();
 
 /**
  * Whether to use `system_linker_exec` for an executable file, like to
  * bypass app data file execute restrictions.
  *
- * A call is made to `isSystemLinkerExecEnabled()` to check if
- * `system_linker_exec` is to be enabled. If its enabled, then
- * `system_linker_exec` is only to be used if
+ * A call is made to `shouldEnableSystemLinkerExec()` to check
+ * if `system_linker_exec` should be enabled. If it should be enabled,
+ * then `system_linker_exec` is only used if
  * `isPathUnderTermuxAppDataDir()` returns `true` for the
  * `executablePath`.
  *
@@ -73,7 +73,7 @@ int isSystemLinkerExecEnabled();
  * `/data/data/com.android.shell` (and using `force` mode) or
  * compiling packages for `/system` directory.
  *
- * See also `isSystemLinkerExecEnabled()`.
+ * See also `shouldEnableSystemLinkerExec()`.
  *
  * @param executablePath The **normalized** executable or interpreter
  *                        path that will actually be executed.

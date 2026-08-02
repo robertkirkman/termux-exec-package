@@ -80,13 +80,13 @@ termux_exec__ld_preload_lib__main() {
 ##
 termux_exec__ld_preload_lib__setup__run_command() {
 
-    local system_linker_exec_enabled
+    local system_linker_exec_should_enable
+    system_linker_exec_should_enable="$(termux-exec-system-linker-exec should-enable)" || return $?
 
-    system_linker_exec_enabled="$(termux-exec-system-linker-exec is-enabled)" || return $?
 
     local ld_preload_file
 
-    if [ "$system_linker_exec_enabled" != "true" ]; then
+    if [ "$system_linker_exec_should_enable" != "true" ]; then
         ld_preload_file="$TERMUX__PREFIX/lib/libtermux-exec-direct-ld-preload.so"
     else
         ld_preload_file="$TERMUX__PREFIX/lib/libtermux-exec-linker-ld-preload.so"
