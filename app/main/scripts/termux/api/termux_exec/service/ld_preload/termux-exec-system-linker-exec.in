@@ -202,7 +202,7 @@ termux_exec__system_linker_exec__should_enable__run_command() {
 
     local system_linker_exec_mode="${TERMUX_EXEC__SYSTEM_LINKER_EXEC__MODE:-}"
     case "${system_linker_exec_mode:-}" in
-        disable|enable|force) :;;
+        disable|enable|force|force_all) :;;
         *) system_linker_exec_mode="enable";;
     esac
     termux_exec__system_linker_exec__log_error_for_level 2 "system_linker_exec_mode: '$system_linker_exec_mode'"
@@ -212,7 +212,7 @@ termux_exec__system_linker_exec__should_enable__run_command() {
     if [ "$system_linker_exec_mode" = "disable" ]; then
         __system_linker_exec_should_enable="false"
 
-    elif [ "$system_linker_exec_mode" = "force" ]; then
+    elif [ "$system_linker_exec_mode" = "force" ] || [ "$system_linker_exec_mode" = "force_all" ]; then
         local system_linker_exec_available="false"
         # If running on Android `>= 10`.
         if [ "$android_build_version_sdk" -ge 29 ]; then
@@ -221,7 +221,23 @@ termux_exec__system_linker_exec__should_enable__run_command() {
         termux_exec__system_linker_exec__log_error_for_level 2 "system_linker_exec_available: '$system_linker_exec_available'"
 
         if [ "$system_linker_exec_available" = "true" ]; then
-            __system_linker_exec_should_enable="true"
+            if [ "$system_linker_exec_mode" = "force" ]; then
+                local uid
+                uid="$(id -u)"
+                return_value=$?
+                if [ $return_value -ne 0 ]; then
+                    termux_exec__system_linker_exec__log_error "Failed to get uid"
+                    return $return_value
+                fi
+
+                if [ "$uid" = "0" ] || [ "$uid" = "2000" ]; then
+                    termux_exec__system_linker_exec__log_error_for_level 2 "uid_to_exempt: '$uid'"
+                else
+                    __system_linker_exec_should_enable="true"
+                fi
+            elif [ "$system_linker_exec_mode" = "force_all" ]; then
+                __system_linker_exec_should_enable="true"
+            fi
         fi
 
     else

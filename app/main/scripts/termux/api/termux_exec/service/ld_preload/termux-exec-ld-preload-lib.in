@@ -146,7 +146,8 @@ termux_exec__ld_preload_lib__setup__run_command() {
     # The process context check is only done by
     # `termux_exec__system_linker_exec__should_enable__run_command()`
     # if `TERMUX_EXEC__SYSTEM_LINKER_EXEC__MODE` is parsed as `enable`.
-    if [ "$system_linker_exec_mode" != "disable" ] && [ "$system_linker_exec_mode" != "force" ]; then
+    if [ "$system_linker_exec_mode" != "disable" ] &&
+        [ "$system_linker_exec_mode" != "force" ] && [ "$system_linker_exec_mode" != "force_all" ]; then
         local se_process_context
         if [ "$TERMUX_EXEC__LD_PRELOAD_LIB__LOG_LEVEL" -ge 2 ]; then
             se_process_context="$(cat "/proc/self/attr/current")" || true

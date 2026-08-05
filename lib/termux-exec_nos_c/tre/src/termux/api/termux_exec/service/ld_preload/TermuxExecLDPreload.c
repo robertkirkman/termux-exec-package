@@ -44,7 +44,7 @@ int shouldEnableSystemLinkerExec() {
     if (systemLinkerExecMode == 0) { // disable
         systemLinkerExecShouldEnable = 1; // disable
 
-    } else if (systemLinkerExecMode == 2) { // force
+    } else if (systemLinkerExecMode == 2 || systemLinkerExecMode == 3) { // force or force_all
         int androidBuildVersionSdk = android_buildVersionSdk_get();
         if (!isRunningTests) {
             logErrorVVerbose(LOG_TAG, "android_build_version_sdk: '%d'", androidBuildVersionSdk);
@@ -58,7 +58,16 @@ int shouldEnableSystemLinkerExec() {
         }
 
         if (systemLinkerExecAvailable) {
-            systemLinkerExecShouldEnable = 0; // enable
+            if (systemLinkerExecMode == 2) { // force
+                uid_t uid = geteuid();
+                if (uid == 0 || uid == 2000) {
+                    logErrorVVerbose(LOG_TAG, "uid_to_exempt: '%d'", uid);
+                } else {
+                    systemLinkerExecShouldEnable = 0; // enable
+                }
+            } else if (systemLinkerExecMode == 3) { // force_all
+                systemLinkerExecShouldEnable = 0; // enable
+            }
         }
 
     } else { // enable

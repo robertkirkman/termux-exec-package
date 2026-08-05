@@ -31,7 +31,8 @@ extern "C" {
  * - `system_linker_exec` is required to bypass app data file execute
  *   restrictions, i.e device is running on Android `>= 10`.
  * - Effective user does not equal root (`0`) and shell (`2000`) user (used for
- *   [`adb`](https://developer.android.com/tools/adb)).
+ *   [`adb`](https://developer.android.com/tools/adb)), as exec
+ *   restrictions do not apply for them.
  * - `TERMUX__SE_PROCESS_CONTEXT` or its fallback `/proc/self/attr/current`
  *   does not start with
  *   `PROCESS_CONTEXT_PREFIX__UNTRUSTED_APP_25` (`u:r:untrusted_app_25:`),
@@ -45,7 +46,22 @@ extern "C" {
  *
  * If `force` is set, then `system_linker_exec` should only be used if:
  * - `system_linker_exec` is supported, i.e device is running on Android `>= 10`.
+ * - Effective user does not equal root (`0`) and shell (`2000`) user (used for
+ *   [`adb`](https://developer.android.com/tools/adb)), as exec
+ *   restrictions do not apply for them.
  * This can be used if running in an untrusted app with `targetSdkVersion` `<= 28`.
+ *
+ * If `force_all` is set, then `system_linker_exec` should only be used if:
+ * - `system_linker_exec` is supported, i.e device is running on Android `>= 10`.
+ * - Effective user is not checked like it is for `force` mode and can
+ *   equal root (`0`) and shell (`2000`) user.
+ * This can be used if running in an untrusted app with `targetSdkVersion` `<= 28`.
+ *
+ * The Termux app should export `force` mode instead of `force_all` mode
+ * in `ENV__TERMUX_EXEC__SYSTEM_LINKER_EXEC__MODE` if using
+ * `targetSdkVersion` `> 28` so that system linker exec should be
+ * forcefully engaged. Exporting `force_all` is not recommended as
+ * users running root and shell commands will get a performance hit.
  *
  * See also `shouldEnableSystemLinkerExecForFile()`.
  *
