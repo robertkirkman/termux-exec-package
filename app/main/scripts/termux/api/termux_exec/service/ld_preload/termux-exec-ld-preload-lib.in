@@ -25,8 +25,9 @@ termux_exec__ld_preload_lib__copy_variable TERMUX_EXEC__SYSTEM_LINKER_EXEC__MODE
 
 
 
-termux_exec__ld_preload_lib__log() { local log_level="${1}"; shift; if [ "$TERMUX_EXEC__LD_PRELOAD_LIB__LOG_LEVEL" -ge "$log_level" ]; then echo "@TERMUX__LNAME@-exec:" "$@"; fi }
+termux_exec__ld_preload_lib__log() { local log_level="${1}"; shift; if [ "$TERMUX_EXEC__LD_PRELOAD_LIB__LOG_LEVEL" -ge "$log_level" ]; then echo "@TERMUX__LNAME@-exec.ld_preload_lib:" "$@"; fi }
 termux_exec__ld_preload_lib__log_error() { echo "@TERMUX__LNAME@-exec:" "$@" 1>&2; }
+termux_exec__ld_preload_lib__log_error_for_level() { local log_level="${1}"; shift; if [ "$TERMUX_EXEC__LD_PRELOAD_LIB__LOG_LEVEL" -ge "$log_level" ]; then echo "@TERMUX__LNAME@-exec.ld_preload_lib:" "$@" 1>&2; fi }
 
 
 
@@ -153,7 +154,7 @@ termux_exec__ld_preload_lib__setup__run_command() {
             se_process_context="$(cat "/proc/self/attr/current" 2>/dev/null)" || true
         fi
         if [ -n "$se_process_context" ]; then
-            termux_exec__ld_preload_lib__log 2 "se_process_context_from_file: '$se_process_context'"
+            termux_exec__ld_preload_lib__log_error_for_level 2 "se_process_context_from_file: '$se_process_context'"
             case "$se_process_context" in
                 "u:r:runas_app:"*|"u:r:su:s0"|"u:r:ksu:s0"|"u:r:magisk:s0")
                     termux_exec__ld_preload_lib__log_error "Cannot set primary Termux '\$LD_PRELOAD' library as su/shell user \
